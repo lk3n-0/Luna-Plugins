@@ -132,23 +132,18 @@ async function extractStreamUrl(url) {
         const pageResponse = await soraFetch(url, { headers: headers, method: 'GET' });
         const html = await pageResponse.text();
 
-        if (html.includes("No streaming servers available") || html.includes("doesn't have any sources yet")) {
-            console.log("[Stream Extractor] This specific episode has no active video assets processed yet.");
-            return null;
-        }
-
         const anilistIdRegex = /anilist_id:(\d+)/i;
         const anilistMatch = html.match(anilistIdRegex);
         if (!anilistMatch) {
-            console.log("[Stream Extractor] Could not locate the AniList ID required for the API request.");
-            return null;
+            console.log("[Stream Extractor] Could not locate the AniList ID d for the API request.");
+            return JSON.stringify({ streams: [] });
         }
         const anilistId = anilistMatch[1];
 
         const epNumMatch = url.match(/[?&]ep=(\d+)/i);
         if (!epNumMatch) {
             console.log("[Stream Extractor] Could not locate episode number in the URL.");
-            return null;
+            return JSON.stringify({ streams: [] });
         }
         const episodeNum = epNumMatch[1];
 
@@ -163,7 +158,7 @@ async function extractStreamUrl(url) {
         };
 
         const apiResponse = await soraFetch(apiUrl, { headers: apiHeaders, method: 'GET' });
-        if (!apiResponse) return null;
+        if (!apiResponse) return JSON.stringify({ streams: [] });
         
         const apiData = await apiResponse.json();
 
