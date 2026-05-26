@@ -34,7 +34,6 @@ async function extractDetails(url) {
     try {
         const response = await soraFetch(url);
         const html = await response.text();
-        console.log(html);
         
         const descriptionRegex = /description:"([^"]+)"/i;
         const durationRegex = /duration:(\d+)/i;
