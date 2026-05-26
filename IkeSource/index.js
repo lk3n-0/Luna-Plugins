@@ -96,12 +96,12 @@ async function extractEpisodes(url) {
 
         const episodesList = [];
 
-        const masterEpisodesRegex = /episodes:\s*(\{[\s\S]*?data:\s*\[[\s\S]*?\]\s*\})/i;
+        const masterEpisodesRegex = /episodes:(\[[\s\S]*?\}\])/i;
         const jsonMatch = html.match(masterEpisodesRegex);
 
 
         const parsedContainer = JSON.parse(jsonMatch[1]);
-        const rawEpisodesArray = parsedContainer.data || [];
+        const rawEpisodesArray = parsedContainer.data;
 
         rawEpisodesArray.forEach(ep => {
             const epNum = parseInt(ep.episode_number, 10);
