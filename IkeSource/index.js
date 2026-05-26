@@ -41,7 +41,6 @@ async function searchResults(keyword) {
 async function extractDetails(url) {
     try {
         const response = await soraFetch(url);
-        console.log(JSON.parse(response))
         const html = await response.text();
         
         const descriptionRegex = /"description":"([^"]+)"/i;
@@ -105,20 +104,38 @@ async function extractDetails(url) {
  */
 async function extractEpisodes(url) {
     try {
-        const match = url.match(/https:\/\/your-source\.com\/watch\/(.+)$/);
+        const match = url.match(/https:\/\/reanime\.to\/anime\/(.+)$/);
         const encodedID = match[1];
-        const response = await soraFetch(`https://api.your-source.com/anime/${encodedID}/episodes`);
-        const data = JSON.parse(response);
+        const response = await soraFetch(`https://reanime.to/watch/${encodedID}?ep=1`);
+        const html = await response.text();
 
-        const transformedResults = data.data.episodes.map(episode => ({
-            href: `https://your-source.com/watch/${encodedID}?ep=${episode.episodeId.split('?ep=')[1]}`,
-            number: episode.number
-        }));
+        const episodesList = [];
+
+        const masterEpisodesRegex = /"episodes":\s*(\{[\s\S]*?"data":\s*\[[\s\S]*?\]\s*\})/i;
+        const jsonMatch = html.match(masterEpisodesRegex);
+
+        if (jsonMatch) {
+            const parsedContainer = JSON.parse(jsonMatch[1]);
+            const rawEpisodesArray = parsedContainer.data || [];
+
+            rawEpisodesArray.forEach(ep => {
+                const epNum = parseInt(ep.episode_number, 10);
+                const epId = ep.episodeId || ('ep-' + epNum); // Fallback to ep-X string if missing
+
+                const destinationLink = 'https://reanime.to/watch/' + encodedID + '?ep=' + epId;
+
+                episodesList.push({
+                    href: destinationLink,
+                    number: epNum
+                });
+            });
+        }
         
         return JSON.stringify(transformedResults);
         
     } catch (error) {
-        console.log('Fetch error:', error);
+        console.log('Error inside extractEpisodes block handler:', error);
+        return JSON.stringify([]);
     }    
 }
 
