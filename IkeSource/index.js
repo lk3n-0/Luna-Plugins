@@ -68,7 +68,7 @@ async function extractDetails(url) {
 
         const transformedResults = [{
             description: description,
-            aliases: aliasStr,
+            aliases: formatStr,
             airdate: `${durationStr} ${isMovie ? "mins" : "eps"}`
         }];
         
