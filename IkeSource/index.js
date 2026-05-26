@@ -1,3 +1,5 @@
+const { jsx } = require("react/jsx-runtime");
+
 /** searchResults
  * Searches for anime/shows/movies based on a keyword.
  * @param {string} keyword - The search keyword.
@@ -63,7 +65,7 @@ async function extractDetails(url) {
             formatStr = 'Format: ' + formatMatch[1] ;
         }
 
-        let isMovie = formatMatch && (formatMatch[1].includes("ovie") || formatMatch.includes("pecial"));
+        let isMovie = formatMatch && (formatMatch[1].includes("ovie") || formatMatch[1].includes("pecial"));
 
         const transformedResults = [{
             description: description,
@@ -91,24 +93,23 @@ async function extractEpisodes(url) {
     try {
         const match = url.match(/https:\/\/reanime\.to\/anime\/([^/?]+)/i);
         const encodedID = match[1];
-        const response = await soraFetch('https://reanime.to/watch/' + encodedID + '?ep=1');
-        const html = await response.text();
+
+        
+        const responseText = await soraFetch('https://reanime.to/api/episodes/' + encodedID);
+        const text = await responseText.text();
+        const data = JSON.parse(text);
 
         const episodesList = [];
 
-        const masterEpisodesRegex = /episode_number:(\d+)/g;
-        const episodeNumbers = html.matchAll(masterEpisodesRegex);
-
-        episodeNumbers.forEach(ep => {
-            const epNum = parseInt(ep[1], 10);
-            const destinationLink = 'https://reanime.to/watch/' + encodedID + '?ep=' + epNum;
-
+        data.data.forEach(ep => {
+            const num = parseInt(ep.episode_number, 10);
+            const destinationLink = 'https://reanime.to/watch/' + encodedID + '?ep=' + num;
             episodesList.push({
                 href: destinationLink,
-                number: epNum
-            });
-        });
-    
+                number: num
+            })
+        })
+
         return JSON.stringify(episodesList);
         
     } catch (error) {
@@ -124,17 +125,67 @@ async function extractEpisodes(url) {
  */
 async function extractStreamUrl(url) {
     try {
-       const match = url.match(/https:\/\/your-source\.com\/watch\/(.+)$/);
-       const encodedID = match[1];
-       const response = await soraFetch(`https://api.your-source.com/episode/sources?animeEpisodeId=${encodedID}&category=dub`);
-       const data = JSON.parse(response);
-       
-       const hlsSource = data.data.sources.find(source => source.type === 'hls');
-       
-       return hlsSource ? hlsSource.url : null;
+        const headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Referer': 'https://reanime.to/'
+        };
+
+        const pageResponse = await soraFetch(url, { headers: headers, method: 'GET' });
+        const html = await pageResponse.text();
+
+        if (html.includes("No streaming servers available") || html.includes("doesn't have any sources yet")) {
+            console.log("[Stream Extractor] This specific episode has no active video assets processed yet.");
+            return null;
+        }
+
+        const anilistIdRegex = /anilist_id:(\d+)/i;
+        const anilistMatch = html.match(anilistIdRegex);
+        if (!anilistMatch) {
+            console.log("[Stream Extractor] Could not locate the AniList ID required for the API request.");
+            return null;
+        }
+        const anilistId = anilistMatch[1];
+
+        const epNumMatch = url.match(/[?&]ep=(\d+)/i);
+        if (!epNumMatch) {
+            console.log("[Stream Extractor] Could not locate episode number in the URL.");
+            return null;
+        }
+        const episodeNum = epNumMatch[1];
+
+        const apiUrl = `https://reanime.to/api/flix/${anilistId}/${episodeNum}`;
+        console.log(`[Stream Extractor] Calling video API: ${apiUrl}`);
+
+        const apiHeaders = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0',
+            'Accept': 'application/json, text/plain, */*',
+            'Referer': url,
+            'X-Requested-With': 'XMLHttpRequest'
+        };
+
+        const apiResponse = await soraFetch(apiUrl, { headers: apiHeaders, method: 'GET' });
+        if (!apiResponse) return null;
+        
+        const apiData = await apiResponse.json();
+
+        if (apiData && apiData.success && apiData.servers && apiData.servers.length > 0) {
+            let streams = [];   
+            apiData.servers.forEach(server => { 
+                streams.push ({
+                    title: (server.serverName || "Unnamed Server") + "(" + server.dataType + ")",
+                    streamUrl: server.dataLink,
+                    headers: {}
+                });
+            });
+            return JSON.stringify({streams});
+        }
+
+        console.log("[Stream Extractor] API call succeeded, but no valid servers were found in the response.");
+        return JSON.stringify({ streams: [] });
     } catch (error) {
-       console.log('(stream) Fetch error: ' + error.message);
-       return null;
+        console.log('Error encountered inside extractStreamUrl framework execution: ' + error.message);
+        return JSON.stringify({ streams: [] });
     }
 }
 

@@ -11,7 +11,7 @@
     "streamType": "HLS",
     "quality": "1080p",
     "baseUrl": "https://reanime.to",
-    "searchBaseUrl": "https://reanime.to/api/search?limit=36&q=",
+    "searchBaseUrl": "https://reanime.to/api/search?limit=10&q=",
     "scriptUrl": "https://raw.githubusercontent.com/lk3n-0/Luna-Plugins/refs/heads/main/IkeSource/index.js",
     "type": "anime",
     "downloadSupport": false,
