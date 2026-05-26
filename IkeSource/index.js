@@ -14,9 +14,21 @@
  */
 async function searchResults(keyword) {
     try {
+        const headers = {
+            'Host': 'reanime.to',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Alt-Used': 'reanime.to',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'Upgrade-Insecure-Requests': '1'
+        };
         const search_base = 'https://reanime.to/api/search?limit=36&q='
         const encodedKeyword = encodeURIComponent(keyword);
-        const responseText = await soraFetch(`${search_base}${encodedKeyword}`);
+        const responseText = await soraFetch(`${search_base}${encodedKeyword}`, headers);
         const data = JSON.parse(responseText);
 
         const transformedResults = data.results.map(anime => ({
@@ -40,7 +52,19 @@ async function searchResults(keyword) {
  */
 async function extractDetails(url) {
     try {
-        const response = await soraFetch(url);
+        const headers = {
+            'Host': 'reanime.to',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Alt-Used': 'reanime.to',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'Upgrade-Insecure-Requests': '1'
+        };
+        const response = await soraFetch(url, headers);
         console.log(response)
         const html = await response.text();
         
