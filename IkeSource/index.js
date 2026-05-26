@@ -5,13 +5,12 @@
  */
 async function searchResults(keyword) {
     try {
-        const search_base = 'https://reanime.to/api/search?limit=36&q='
+        const search_base = 'https://reanime.to/api/search?limit=10&q='
         const encodedKeyword = encodeURIComponent(keyword);
         const responseText = await soraFetch(`${search_base}${encodedKeyword}`);
         const text = await responseText.text();
-        console.log(text);
         const data = JSON.parse(text);
-        
+
         const transformedResults = data.results.map(anime => ({
             title: anime.title.english,
             image: anime.cover_image.large,
@@ -35,6 +34,7 @@ async function extractDetails(url) {
     try {
         const response = await soraFetch(url);
         const html = await response.text();
+        console.log(html);
         
         const descriptionRegex = /"description":"([^"]+)"/i;
         const durationRegex = /"duration":(\d+)/i;
@@ -124,7 +124,7 @@ async function extractEpisodes(url) {
             });
         }
         
-        return JSON.stringify(transformedResults);
+        return JSON.stringify(episodesList);
         
     } catch (error) {
         console.log('Error inside extractEpisodes block handler: ' + error.message);
