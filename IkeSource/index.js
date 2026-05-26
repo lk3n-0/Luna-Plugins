@@ -19,7 +19,7 @@ async function searchResults(keyword) {
         return JSON.stringify(transformedResults);
         
     } catch (error) {
-        console.log('Fetch error: ' + error.message);
+        console.log('(search) Fetch error: ' + error.message);
         return JSON.stringify([{ title: 'Error', image: '', href: '' }]);
     }
 }
@@ -146,7 +146,7 @@ async function extractStreamUrl(url) {
        
        return hlsSource ? hlsSource.url : null;
     } catch (error) {
-       console.log('Fetch error: ' + error.message);
+       console.log('(stream) Fetch error: ' + error.message);
        return null;
     }
 }
