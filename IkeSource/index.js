@@ -36,10 +36,10 @@ async function extractDetails(url) {
         const html = await response.text();
         console.log(html);
         
-        const descriptionRegex = /"description":"([^"]+)"/i;
-        const durationRegex = /"duration":(\d+)/i;
-        const synonymsRegex = /"synonyms":(\[[^\]]+\])/i;
-        const formatRegex = /"format":"([^"]+)"/i
+        const descriptionRegex = /description:"([^"]+)"/i;
+        const durationRegex = /duration:(\d+)/i;
+        const synonymsRegex = /synonyms:(\[[^\]]+\])/i;
+        const formatRegex = /format:"([^"]+)"/i
 
         const descriptionMatch = html.match(descriptionRegex);
         const durationMatch = html.match(durationRegex);
