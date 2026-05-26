@@ -41,6 +41,7 @@ async function searchResults(keyword) {
 async function extractDetails(url) {
     try {
         const response = await soraFetch(url);
+        console.log(response)
         const html = await response.text();
         
         const descriptionRegex = /"description":"([^"]+)"/i;
