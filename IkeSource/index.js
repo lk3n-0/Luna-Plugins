@@ -100,7 +100,7 @@ async function extractEpisodes(url) {
         const jsonMatch = html.match(masterEpisodesRegex);
 
 
-        const parsedContainer = JSON.parse(jsonMatch[1]);
+        const parsedContainer = JSON.parse("{" + jsonMatch[1] + "}");
         const rawEpisodesArray = parsedContainer.data;
 
         rawEpisodesArray.forEach(ep => {
