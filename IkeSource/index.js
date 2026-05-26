@@ -96,24 +96,23 @@ async function extractEpisodes(url) {
 
         const episodesList = [];
 
-        const masterEpisodesRegex = /"episodes":\s*(\{[\s\S]*?"data":\s*\[[\s\S]*?\]\s*\})/i;
+        const masterEpisodesRegex = /episodes:\s*(\{[\s\S]*?data:\s*\[[\s\S]*?\]\s*\})/i;
         const jsonMatch = html.match(masterEpisodesRegex);
 
-        if (jsonMatch) {
-            const parsedContainer = JSON.parse(jsonMatch[1]);
-            const rawEpisodesArray = parsedContainer.data || [];
 
-            rawEpisodesArray.forEach(ep => {
-                const epNum = parseInt(ep.episode_number, 10);
-                const destinationLink = 'https://reanime.to/watch/' + encodedID + '?ep=' + epNum;
+        const parsedContainer = JSON.parse(jsonMatch[1]);
+        const rawEpisodesArray = parsedContainer.data || [];
 
-                episodesList.push({
-                    href: destinationLink,
-                    number: epNum
-                });
+        rawEpisodesArray.forEach(ep => {
+            const epNum = parseInt(ep.episode_number, 10);
+            const destinationLink = 'https://reanime.to/watch/' + encodedID + '?ep=' + epNum;
+
+            episodesList.push({
+                href: destinationLink,
+                number: epNum
             });
-        }
-        
+        });
+    
         return JSON.stringify(episodesList);
         
     } catch (error) {
