@@ -1,12 +1,3 @@
-/** Sora Module Template
- * This template is designed to help you create a module for Sora.
- * It includes functions for searching, extracting details, episodes, and stream URLs.
- * You can modify these functions to suit your needs.
- * 
- * For more information, visit the Sora documentation at https://sora.jm26.net/docs
- */
-
-
 /** searchResults
  * Searches for anime/shows/movies based on a keyword.
  * @param {string} keyword - The search keyword.
@@ -28,7 +19,7 @@ async function searchResults(keyword) {
         return JSON.stringify(transformedResults);
         
     } catch (error) {
-        console.log('Fetch error:', error);
+        console.log('Fetch error: ' + error.message);
         return JSON.stringify([{ title: 'Error', image: '', href: '' }]);
     }
 }
@@ -74,7 +65,7 @@ async function extractDetails(url) {
                     aliasStr = 'Also Known As: ' + aliasesArray.join(', ');
                 }
             } catch (jsonErr) {
-                console.log('Failed parsing synonyms array:', jsonErr);
+                console.log('Failed parsing synonyms array: ' + jsonErr);
             }
         }
 
@@ -88,7 +79,7 @@ async function extractDetails(url) {
         
         return JSON.stringify(transformedResults);
     } catch (error) {
-        console.log('Details error:', error);
+        console.log('Details error:' + error.message);
         return JSON.stringify([{
         description: 'Error loading description',
         aliases: 'Duration: Unknown',
@@ -134,7 +125,7 @@ async function extractEpisodes(url) {
         return JSON.stringify(transformedResults);
         
     } catch (error) {
-        console.log('Error inside extractEpisodes block handler:', error);
+        console.log('Error inside extractEpisodes block handler: ' + error.message);
         return JSON.stringify([]);
     }    
 }
@@ -155,7 +146,7 @@ async function extractStreamUrl(url) {
        
        return hlsSource ? hlsSource.url : null;
     } catch (error) {
-       console.log('Fetch error:', error);
+       console.log('Fetch error: ' + error.message);
        return null;
     }
 }
