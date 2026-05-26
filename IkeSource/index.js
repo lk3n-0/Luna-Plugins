@@ -89,9 +89,9 @@ async function extractDetails(url) {
  */
 async function extractEpisodes(url) {
     try {
-        const match = url.match(/https:\/\/reanime\.to\/anime\/(.+)$/);
+        const match = url.match(/https:\/\/reanime\.to\/anime\/([^/?]+)/i);
         const encodedID = match[1];
-        const response = await soraFetch(`https://reanime.to/watch/${encodedID}?ep=1`);
+        const response = await soraFetch('https://reanime.to/watch/' + encodedID + '?ep=1');
         const html = await response.text();
 
         const episodesList = [];
@@ -105,9 +105,7 @@ async function extractEpisodes(url) {
 
             rawEpisodesArray.forEach(ep => {
                 const epNum = parseInt(ep.episode_number, 10);
-                const epId = ep.episodeId || ('ep-' + epNum); // Fallback to ep-X string if missing
-
-                const destinationLink = 'https://reanime.to/watch/' + encodedID + '?ep=' + epId;
+                const destinationLink = 'https://reanime.to/watch/' + encodedID + '?ep=' + epNum;
 
                 episodesList.push({
                     href: destinationLink,
