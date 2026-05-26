@@ -56,19 +56,12 @@ async function extractDetails(url) {
 
         let durationStr = 'Duration: Unknown';
         if (durationMatch) {
-            durationStr = 'Duration: ' + durationMatch[1] + ' min';
+            durationStr = 'Duration: ' + durationMatch[1];
         }
 
-        let aliasStr = 'Aliases: N/A';
-        if (synonymsMatch) {
-            try {
-                const aliasesArray = JSON.parse(synonymsMatch[1]);
-                if (aliasesArray && aliasesArray.length > 0) {
-                    aliasStr = 'Also Known As: ' + aliasesArray.join(', ');
-                }
-            } catch (jsonErr) {
-                console.log('Failed parsing synonyms array: ' + jsonErr);
-            }
+        let formatStr = 'Format: Unknown'
+        if (formatMatch) {
+            formatStr = 'Format: ' + formatMatch[1] ;
         }
 
         let isMovie = formatMatch && formatMatch[1].includes("ovie");
