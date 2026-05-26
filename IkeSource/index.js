@@ -40,18 +40,50 @@ async function searchResults(keyword) {
  */
 async function extractDetails(url) {
     try {
-        const match = url.match(/https:\/\/your-source\.com\/watch\/(.+)$/);
-        const encodedID = match[1];
-        const response = await soraFetch(`https://api.your-source.com/anime/${encodedID}`);
-        const data = JSON.parse(response);
+        const response = await soraFetch(url);
+        const html = await response.text();
         
-        const animeInfo = data.data.anime.info;
-        const moreInfo = data.data.anime.moreInfo;
+        const descriptionRegex = /"description":"([^"]+)"/i;
+        const durationRegex = /"duration":(\d+)/i;
+        const synonymsRegex = /"synonyms":(\[[^\]]+\])/i;
+        const formatRegex = /"format":"([^"]+)"/i
+
+        const descriptionMatch = html.match(descriptionRegex);
+        const durationMatch = html.match(durationRegex);
+        const synonymsMatch = html.match(synonymsRegex);
+        const formatMatch = html.match(formatRegex);
+
+        let description = 'No description available';
+        if (descriptionMatch) {
+            description = descriptionMatch[1]
+                .replace(/\\n/g, '\n')       // Convert literal escaped \n to real newlines
+                .replace(/\\u003Cbr>/g, '')  // Strip custom Svelte HTML line break tags (<br>)
+                .replace(/\\"/g, '"');       // Clean up escaped quotation marks
+        }
+
+        let durationStr = 'Duration: Unknown';
+        if (durationMatch) {
+            durationStr = 'Duration: ' + durationMatch[1] + ' min';
+        }
+
+        let aliasStr = 'Aliases: N/A';
+        if (synonymsMatch) {
+            try {
+                const aliasesArray = JSON.parse(synonymsMatch[1]);
+                if (aliasesArray && aliasesArray.length > 0) {
+                    aliasStr = 'Also Known As: ' + aliasesArray.join(', ');
+                }
+            } catch (jsonErr) {
+                console.log('Failed parsing synonyms array:', jsonErr);
+            }
+        }
+
+        let isMovie = formatMatch && formatMatch[1].includes("ovie");
 
         const transformedResults = [{
-            description: animeInfo.description || 'No description available',
-            aliases: `Duration: ${animeInfo.stats?.duration || 'Unknown'}`,
-            airdate: `Aired: ${moreInfo?.aired || 'Unknown'}`
+            description: description,
+            aliases: aliasStr,
+            airdate: `${durationStr} ${isMovie ? "mins" : "eps"}`
         }];
         
         return JSON.stringify(transformedResults);
