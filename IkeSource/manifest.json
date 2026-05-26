@@ -1,0 +1,20 @@
+{
+    "sourceName": "IkeSource",
+    "iconUrl": "https://png.pngtree.com/recommend-works/png-clipart/20250321/ourmid/pngtree-green-check-mark-icon-png-image_15808519.png",
+    "author": {
+        "name": "ike",
+        "icon": "https://cdn-icons-png.flaticon.com/512/535/535239.png",
+        "url": "https://github.com/ik3n-0"
+    },
+    "version": "0.0.1",
+    "language": "English",
+    "streamType": "HLS",
+    "quality": "1080p",
+    "baseUrl": "https://reanime.to",
+    "searchBaseUrl": "https://reanime.to/api/search?limit=36&q=",
+    "scriptUrl": "TODO",
+    "type": "anime",
+    "downloadSupport": false,
+    "asyncJS": true,
+    "softsub": false
+}
