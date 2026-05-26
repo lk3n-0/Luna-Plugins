@@ -1,5 +1,3 @@
-const { jsx } = require("react/jsx-runtime");
-
 /** searchResults
  * Searches for anime/shows/movies based on a keyword.
  * @param {string} keyword - The search keyword.
