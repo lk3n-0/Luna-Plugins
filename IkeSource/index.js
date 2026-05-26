@@ -135,7 +135,7 @@ async function extractStreamUrl(url) {
         const anilistIdRegex = /anilist_id:(\d+)/i;
         const anilistMatch = html.match(anilistIdRegex);
         if (!anilistMatch) {
-            console.log("[Stream Extractor] Could not locate the AniList ID d for the API request.");
+            console.log("[Stream Extractor] Could not locate the AniList ID required for the API request.");
             return JSON.stringify({ streams: [] });
         }
         const anilistId = anilistMatch[1];
