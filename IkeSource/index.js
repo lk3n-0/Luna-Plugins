@@ -8,6 +8,7 @@ async function searchResults(keyword) {
         const search_base = 'https://reanime.to/api/search?limit=36&q='
         const encodedKeyword = encodeURIComponent(keyword);
         const responseText = await soraFetch(`${search_base}${encodedKeyword}`);
+        console.log(responseText.json())
         const data = JSON.parse(responseText);
 
         const transformedResults = data.results.map(anime => ({
