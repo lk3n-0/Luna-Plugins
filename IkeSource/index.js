@@ -63,7 +63,7 @@ async function extractDetails(url) {
             formatStr = 'Format: ' + formatMatch[1] ;
         }
 
-        let isMovie = formatMatch && formatMatch[1].includes("ovie");
+        let isMovie = formatMatch && (formatMatch[1].includes("ovie") || formatMatch.includes("pecial"));
 
         const transformedResults = [{
             description: description,
