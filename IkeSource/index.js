@@ -167,9 +167,14 @@ async function extractStreamUrl(url) {
             apiData.servers.forEach(server => { 
                 streams.push ({
                     title: (server.serverName || "Unnamed Server") + "(" + server.dataType + ")",
-                    streamUrl: server.dataLink,
+                    streamUrl: server.dataLink.replace(/\\/g, ''),
                     headers: {}
                 });
+            });
+            streams.push ({
+                title: "TEST",
+                streamUrl: "https://flixcloud.cc/api/m3u8/798e73bd9d49054c23df7e2d",
+                headers: {}
             });
             return JSON.stringify({streams});
         }
