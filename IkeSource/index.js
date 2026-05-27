@@ -117,8 +117,9 @@ async function extractStreamUrl(url) {
         const rawUrl = source[2];
         
         const fullUrl = rawUrl.startsWith('http') ? rawUrl : 'https://www.levidia.ch/' + rawUrl;
+        const finalUrl = await getFinalLink(fullUrl);
 
-        providers[fullUrl] = rawName;
+        providers[finalUrl] = rawName;
     });
 
     // Multiple extractor (recommended)
@@ -161,6 +162,22 @@ async function soraFetch(url, options = { headers: {}, method: 'GET', body: null
             await console.log('soraFetch error: ' + error.message);
             return null;
         }
+    }
+}
+
+async function getFinalLink(url) {
+    try {
+        // 'follow' is the default behavior, but it's good to be explicit
+        const response = await fetch(url, { redirect: 'follow' });
+        
+        // response.url contains the final destination after all redirects!
+        console.log("Started at:", url);
+        console.log("Ended at:", response.url); 
+        
+        return response.url;
+    } catch (error) {
+        console.error("Fetch failed:", error);
+        return null;
     }
 }
 
