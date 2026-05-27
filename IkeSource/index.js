@@ -112,15 +112,15 @@ async function extractStreamUrl(url) {
     const sourceMatch = Array.from(html.matchAll(sourceRegex));
     let providers = {};
 
-    sourceMatch.forEach(source => {
-        const rawName = source[1].trim().toLowerCase(); 
-        const rawUrl = source[2];
-        
-        const fullUrl = rawUrl.startsWith('http') ? rawUrl : 'https://www.levidia.ch/' + rawUrl;
-        const finalUrl = await getFinalLink(fullUrl);
+    for (const source of sourceMatches) {
+      const rawName = source[1].trim().toLowerCase();
+      const rawUrl = source[2];
+      const fullUrl = rawUrl.startsWith('http') ? rawUrl : 'https://www.levidia.ch/' + rawUrl;
 
-        providers[finalUrl] = rawName;
-    });
+      const finalUrl = await getFinalLink(fullUrl);
+
+      providers[finalUrl] = rawName;
+    }
 
     // Multiple extractor (recommended)
     let streams = [];
@@ -167,8 +167,7 @@ async function soraFetch(url, options = { headers: {}, method: 'GET', body: null
 
 async function getFinalLink(url) {
     try {
-        // 'follow' is the default behavior, but it's good to be explicit
-        const response = await fetch(url, { redirect: 'follow' });
+        const response = await soraFetch(url);
         
         // response.url contains the final destination after all redirects!
         console.log("Started at:", url);
