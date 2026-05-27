@@ -170,12 +170,12 @@ async function getFinalLink(url) {
         const response = await soraFetch(url);
         
         // response.url contains the final destination after all redirects!
-        console.log("Started at:", url);
-        console.log("Ended at:", response.url); 
+        console.log("Started at: " + url);
+        console.log("Ended at: " + response.url); 
         
         return response.url;
     } catch (error) {
-        console.error("Fetch failed:", error);
+        console.error("(getFinalLink) Fetch failed: " + error);
         return null;
     }
 }
