@@ -112,7 +112,7 @@ async function extractStreamUrl(url) {
     const sourceMatch = Array.from(html.matchAll(sourceRegex));
     let providers = {};
 
-    for (const source of sourceMatches) {
+    for (const source of sourceMatch) {
       const rawName = source[1].trim().toLowerCase();
       const rawUrl = source[2];
       const fullUrl = rawUrl.startsWith('http') ? rawUrl : 'https://www.levidia.ch/' + rawUrl;

@@ -13,7 +13,7 @@
     "baseUrl": "https://www.levidia.ch/",
     "searchBaseUrl": "https://www.levidia.ch/search.php?q=",
     "scriptUrl": "https://raw.githubusercontent.com/lk3n-0/Luna-Plugins/refs/heads/main/IkeSource/index.js",
-    "type": "anime",
+    "type": "shows",
     "downloadSupport": false,
     "asyncJS": true,
     "softsub": false
