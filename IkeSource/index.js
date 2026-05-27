@@ -172,7 +172,15 @@ async function getFinalLink(url) {
         // response.url contains the final destination after all redirects!
         console.log("Started at: " + url);
         console.log("Ended at: " + response.url); 
-        
+        console.log("response details:");
+        for (const key in response) {
+        try {
+            console.log(key + ": " + response[key]);
+        } catch (e) {
+            console.log(key + ": [unprintable]");
+        }
+        }
+        console.log("<------------->")
         return response.url;
     } catch (error) {
         console.error("(getFinalLink) Fetch failed: " + error);
