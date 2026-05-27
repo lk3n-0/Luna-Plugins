@@ -5,16 +5,17 @@
  */
 async function searchResults(keyword) {
     try {
-        const search_base = 'https://reanime.to/api/search?limit=10&q='
+        const search_base = 'https://www.levidia.ch/search.php?q='
         const encodedKeyword = encodeURIComponent(keyword);
         const responseText = await soraFetch(`${search_base}${encodedKeyword}`);
-        const text = await responseText.text();
-        const data = JSON.parse(text);
+        const html = await responseText.text();
 
-        const transformedResults = data.results.map(anime => ({
-            title: anime.title.english,
-            image: anime.cover_image.large,
-            href: `https://reanime.to/anime/${anime.anime_id}`
+        const showRegex = /<li class="mlist"[\s\S]+?href="([\s\S]+?)"[\s\S]+?src="([\s\S]+?)"[\s\S]+?<strong>([\s\S]+?)</gi
+        const showMatch = html.matchAll(showRegex);
+        const transformedResults = showMatch.map(x => ({
+            title: x[3],
+            image: x[2],
+            href:  x[1]
         }));
         
         return JSON.stringify(transformedResults);
@@ -35,40 +36,18 @@ async function extractDetails(url) {
         const response = await soraFetch(url);
         const html = await response.text();
         
-        const descriptionRegex = /description:"([^"]+)"/i;
-        const durationRegex = /duration:(\d+)/i;
-        const synonymsRegex = /synonyms:(\[[^\]]+\])/i;
-        const formatRegex = /format:"([^"]+)"/i
+        const descriptionRegex = /<div class="plot" [^>]+>([^<]+)</i;
+        const durationRegex = /Runtime: ([^<]+)</i;
+        const releaseRegex = /Release: [^>]+>([^<]+)</i;
 
         const descriptionMatch = html.match(descriptionRegex);
         const durationMatch = html.match(durationRegex);
-        const synonymsMatch = html.match(synonymsRegex);
-        const formatMatch = html.match(formatRegex);
-
-        let description = 'No description available';
-        if (descriptionMatch) {
-            description = descriptionMatch[1]
-                .replace(/\\n/g, '\n')       // Convert literal escaped \n to real newlines
-                .replace(/\\u003Cbr>/g, '')  // Strip custom Svelte HTML line break tags (<br>)
-                .replace(/\\"/g, '"');       // Clean up escaped quotation marks
-        }
-
-        let durationStr = 'Duration: Unknown';
-        if (durationMatch) {
-            durationStr = 'Duration: ' + durationMatch[1];
-        }
-
-        let formatStr = 'Format: Unknown'
-        if (formatMatch) {
-            formatStr = 'Format: ' + formatMatch[1] ;
-        }
-
-        let isMovie = formatMatch && (formatMatch[1].includes("ovie") || formatMatch[1].includes("pecial"));
+        const releaseMatch = html.match(releaseRegex);
 
         const transformedResults = [{
-            description: description,
-            aliases: formatStr,
-            airdate: `${durationStr} ${isMovie ? "mins" : "eps"}`
+            description: descriptionMatch[1],
+            aliases: durationMatch[1],
+            airdate: releaseMatch[1]
         }];
         
         return JSON.stringify(transformedResults);
@@ -89,24 +68,27 @@ async function extractDetails(url) {
  */
 async function extractEpisodes(url) {
     try {
-        const match = url.match(/https:\/\/reanime\.to\/anime\/([^/?]+)/i);
-        const encodedID = match[1];
+        const responseText = await soraFetch(url);
+        const html = await responseText.text();
 
+        const seasonRegex = /<li class="pageheader mals">[\s\S]*?>Season \d+<[\s\S]*?<\/li>([\s\S]+?)(?=<li class="pageheader mals">|<\/ul>)/gi;
+        const episodeRegex = /(tv-episode\.php\?[^"]+)/gi;
         
-        const responseText = await soraFetch('https://reanime.to/api/episodes/' + encodedID);
-        const text = await responseText.text();
-        const data = JSON.parse(text);
-
+        const seasonMatch = html.matchAll(seasonRegex);
         const episodesList = [];
 
-        data.data.forEach(ep => {
-            const num = parseInt(ep.episode_number, 10);
-            const destinationLink = 'https://reanime.to/watch/' + encodedID + '?ep=' + num;
-            episodesList.push({
-                href: destinationLink,
-                number: num
+        for (let index = seasonMatch.length - 1; index > 0; index--) {
+            const seasonHTML = seasonMatch[index];
+
+            episodeMatch.forEach((ep, i) => {
+                const num = i + 1;
+                const destinationLink = 'https://www.levidia.ch/' + ep[1];
+                episodesList.push({
+                    href: destinationLink,
+                    number: num
+                })
             })
-        })
+        }
 
         return JSON.stringify(episodesList);
         
@@ -122,69 +104,38 @@ async function extractEpisodes(url) {
  * @returns {Promise<string|null>} - The stream URL or null if not found.
  */
 async function extractStreamUrl(url) {
+  try {
+    const responseText = await soraFetch(url);
+    const html = await responseText.text();
+    
+    const sourceRegex = /<span[\s\S]+?><b>([\s\S]+?)<\/b>[\s\S]+? class="mainlink kanan"><a href="([^"]+)/gi;
+    const sourceMatch = html.matchAll(sourceRegex);
+    let providers = {};
+
+    sourceMatch.forEach(source => {
+        providers[source[1]] = source[2];
+    });
+    
+    // Multiple extractor (recommended)
+    let streams = [];
     try {
-        const headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Referer': 'https://reanime.to/'
-        };
+      streams = await multiExtractor(providers);
+      let returnedStreams = {
+        streams: streams,
+      };
 
-        const pageResponse = await soraFetch(url, { headers: headers, method: 'GET' });
-        const html = await pageResponse.text();
-
-        const anilistIdRegex = /anilist_id:(\d+)/i;
-        const anilistMatch = html.match(anilistIdRegex);
-        if (!anilistMatch) {
-            console.log("[Stream Extractor] Could not locate the AniList ID required for the API request.");
-            return JSON.stringify({ streams: [] });
-        }
-        const anilistId = anilistMatch[1];
-
-        const epNumMatch = url.match(/[?&]ep=(\d+)/i);
-        if (!epNumMatch) {
-            console.log("[Stream Extractor] Could not locate episode number in the URL.");
-            return JSON.stringify({ streams: [] });
-        }
-        const episodeNum = epNumMatch[1];
-
-        const apiUrl = `https://reanime.to/api/flix/${anilistId}/${episodeNum}`;
-        console.log(`[Stream Extractor] Calling video API: ${apiUrl}`);
-
-        const apiHeaders = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0',
-            'Accept': 'application/json, text/plain, */*',
-            'Referer': url,
-            'X-Requested-With': 'XMLHttpRequest'
-        };
-
-        const apiResponse = await soraFetch(apiUrl, { headers: apiHeaders, method: 'GET' });
-        if (!apiResponse) return JSON.stringify({ streams: [] });
-        
-        const apiData = await apiResponse.json();
-
-        if (apiData && apiData.success && apiData.servers && apiData.servers.length > 0) {
-            let streams = [];   
-            apiData.servers.forEach(server => { 
-                streams.push ({
-                    title: (server.serverName || "Unnamed Server") + "(" + server.dataType + ")",
-                    streamUrl: server.dataLink.replace(/\\/g, ''),
-                    headers: {}
-                });
-            });
-            streams.push ({
-                title: "TEST",
-                streamUrl: "https://flixcloud.cc/api/m3u8/798e73bd9d49054c23df7e2d",
-                headers: {}
-            });
-            return JSON.stringify({streams});
-        }
-
-        console.log("[Stream Extractor] API call succeeded, but no valid servers were found in the response.");
-        return JSON.stringify({ streams: [] });
+      console.log(
+        "Multi extractor streams: " + JSON.stringify(returnedStreams)
+      );
+      return JSON.stringify(returnedStreams);
     } catch (error) {
-        console.log('Error encountered inside extractStreamUrl framework execution: ' + error.message);
-        return JSON.stringify({ streams: [] });
+      console.log("Multi extractor error:" + error);
+      return JSON.stringify([{ provider: "Error2", link: "" }]);
     }
+  } catch (error) {
+    console.log("Fetch error:" + error);
+    return null;
+  }
 }
 
 
