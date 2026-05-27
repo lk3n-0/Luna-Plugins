@@ -15,7 +15,7 @@ async function searchResults(keyword) {
         const cookieRegex = /_3chk\('([^']+?)','([^']+?)'/i;
         const cookieMatch = html.match(cookieRegex);
 
-        cookies = response.headers.get("set-cookie").split(';')[0];
+        cookies = responseText.headers.get("set-cookie").split(';')[0];
         cookies = cookies + '; ' + cookieMatch[1] + '=' + cookieMatch[2];
 
         const showRegex = /<li class="mlist"[\s\S]+?href="([\s\S]+?)"[\s\S]+?src="([\s\S]+?)"[\s\S]+?<strong>([\s\S]+?)</gi;
