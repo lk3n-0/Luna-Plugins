@@ -77,7 +77,7 @@ async function extractEpisodes(url) {
         const seasonMatch = Array.from(html.matchAll(seasonRegex));
         const episodesList = [];
 
-        for (let index = seasonMatch.length - 1; index > 0; index--) {
+        for (let index = seasonMatch.length - 1; index >= 0; index--) {
             const seasonHTML = seasonMatch[index];
             const episodeMatch = seasonHTML[1].matchAll(episodeRegex);
             episodeMatch.forEach((ep, i) => {
@@ -113,7 +113,12 @@ async function extractStreamUrl(url) {
     let providers = {};
 
     sourceMatch.forEach(source => {
-        providers[source[1]] = source[2];
+        const rawName = source[1].trim().toLowerCase(); 
+        const rawUrl = source[2];
+        
+        const fullUrl = rawUrl.startsWith('http') ? rawUrl : 'https://www.levidia.ch/' + rawUrl;
+
+        providers[fullUrl] = rawName;
     });
 
     // Multiple extractor (recommended)
