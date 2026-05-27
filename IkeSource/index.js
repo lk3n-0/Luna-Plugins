@@ -12,7 +12,7 @@ async function searchResults(keyword) {
 
         const showRegex = /<li class="mlist"[\s\S]+?href="([\s\S]+?)"[\s\S]+?src="([\s\S]+?)"[\s\S]+?<strong>([\s\S]+?)</gi
         const showMatch = html.matchAll(showRegex);
-        const transformedResults = showMatch.map(x => ({
+        const transformedResults = Array.from(html.matchAll(showRegex)).map(x => ({
             title: x[3],
             image: x[2],
             href:  x[1]
@@ -74,12 +74,12 @@ async function extractEpisodes(url) {
         const seasonRegex = /<li class="pageheader mals">[\s\S]*?>Season \d+<[\s\S]*?<\/li>([\s\S]+?)(?=<li class="pageheader mals">|<\/ul>)/gi;
         const episodeRegex = /(tv-episode\.php\?[^"]+)/gi;
         
-        const seasonMatch = html.matchAll(seasonRegex);
+        const seasonMatch = Array.from(html.matchAll(seasonRegex));
         const episodesList = [];
 
         for (let index = seasonMatch.length - 1; index > 0; index--) {
             const seasonHTML = seasonMatch[index];
-
+            const episodeMatch = seasonHTML[1].matchAll(episodeRegex);
             episodeMatch.forEach((ep, i) => {
                 const num = i + 1;
                 const destinationLink = 'https://www.levidia.ch/' + ep[1];
@@ -109,13 +109,13 @@ async function extractStreamUrl(url) {
     const html = await responseText.text();
     
     const sourceRegex = /<span[\s\S]+?><b>([\s\S]+?)<\/b>[\s\S]+? class="mainlink kanan"><a href="([^"]+)/gi;
-    const sourceMatch = html.matchAll(sourceRegex);
+    const sourceMatch = Array.from(html.matchAll(sourceRegex));
     let providers = {};
 
     sourceMatch.forEach(source => {
         providers[source[1]] = source[2];
     });
-    
+
     // Multiple extractor (recommended)
     let streams = [];
     try {
