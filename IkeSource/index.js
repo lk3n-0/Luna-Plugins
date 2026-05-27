@@ -9,8 +9,8 @@ async function searchResults(keyword) {
     try {
         const search_base = 'https://www.levidia.ch/search.php?q='
         const encodedKeyword = encodeURIComponent(keyword);
-        const responseText = await soraFetch(`${search_base}${encodedKeyword}`);
-        const html = await responseText.text();
+        const response = await soraFetch(`${search_base}${encodedKeyword}`);
+        const html = await response.text();
 
         const cookieRegex = /_3chk\('([^']+?)','([^']+?)'/i;
         const cookieMatch = html.match(cookieRegex);
@@ -18,7 +18,7 @@ async function searchResults(keyword) {
         const rawCookies = (response.headers && typeof response.headers.get === 'function') 
             ? response.headers.get("set-cookie") 
             : (response.headers ? response.headers['set-cookie'] : null );
-            
+
         if (!rawCookies) throw new Error('No Response header');
         cookies = rawCookies.split(';')[0];
         cookies = cookies + '; ' + cookieMatch[1] + '=' + cookieMatch[2];
