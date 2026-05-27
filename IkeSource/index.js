@@ -1,3 +1,5 @@
+let cookies = "";
+
 /** searchResults
  * Searches for anime/shows/movies based on a keyword.
  * @param {string} keyword - The search keyword.
@@ -10,7 +12,13 @@ async function searchResults(keyword) {
         const responseText = await soraFetch(`${search_base}${encodedKeyword}`);
         const html = await responseText.text();
 
-        const showRegex = /<li class="mlist"[\s\S]+?href="([\s\S]+?)"[\s\S]+?src="([\s\S]+?)"[\s\S]+?<strong>([\s\S]+?)</gi
+        const cookieRegex = /_3chk\('([^']+?)','([^']+?)'/i;
+        const cookieMatch = html.match(cookieRegex);
+
+        cookies = response.headers.get("set-cookie").split(';')[0];
+        cookies = cookies + '; ' + cookieMatch[1] + '=' + cookieMatch[2];
+
+        const showRegex = /<li class="mlist"[\s\S]+?href="([\s\S]+?)"[\s\S]+?src="([\s\S]+?)"[\s\S]+?<strong>([\s\S]+?)</gi;
         const showMatch = html.matchAll(showRegex);
         const transformedResults = Array.from(html.matchAll(showRegex)).map(x => ({
             title: x[3],
@@ -33,7 +41,10 @@ async function searchResults(keyword) {
  */
 async function extractDetails(url) {
     try {
-        const response = await soraFetch(url);
+        const options = {headers: {}};
+        options.headers['Cookie'] = cookies;
+
+        const response = await soraFetch(url, options);
         const html = await response.text();
         
         const descriptionRegex = /<div class="plot" [^>]+>([^<]+)</i;
@@ -68,7 +79,10 @@ async function extractDetails(url) {
  */
 async function extractEpisodes(url) {
     try {
-        const responseText = await soraFetch(url);
+        const options = {headers: {}};
+        options.headers['Cookie'] = cookies;
+
+        const responseText = await soraFetch(url, options);
         const html = await responseText.text();
 
         const seasonRegex = /<li class="pageheader mals">[\s\S]*?>Season \d+<[\s\S]*?<\/li>([\s\S]+?)(?=<li class="pageheader mals">|<\/ul>)/gi;
@@ -105,7 +119,9 @@ async function extractEpisodes(url) {
  */
 async function extractStreamUrl(url) {
   try {
-    const responseText = await soraFetch(url);
+    const options = {headers: {}};
+    options.headers['Cookie'] = cookies;
+    const responseText = await soraFetch(url, options);
     const html = await responseText.text();
     
     const sourceRegex = /<span[\s\S]+?><b>([\s\S]+?)<\/b>[\s\S]+? class="mainlink kanan"><a href="([^"]+)/gi;
@@ -167,7 +183,9 @@ async function soraFetch(url, options = { headers: {}, method: 'GET', body: null
 
 async function getFinalLink(url) {
     try {
-        const response = await soraFetch(url);
+        const options = {headers: {}};
+        options.headers['Cookie'] = cookies;
+        const response = await soraFetch(url, options);
         
         // response.url contains the final destination after all redirects!
         console.log("Started at: " + url);
