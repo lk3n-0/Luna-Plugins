@@ -24,7 +24,7 @@ async function searchResults(keyword) {
             image: x[2],
             href:  x[1]
         }));
-        
+        console.log('COOKIES: ' + cookies);
         return JSON.stringify(transformedResults);
         
     } catch (error) {
