@@ -192,7 +192,13 @@ async function getFinalLink(url) {
         console.log("response details:");
         for (const key in response) {
         try {
-            console.log(key + ": " + response[key]);
+          if (key == "headers") {
+            for (const k in response[key]) {
+              console.log("Header - " + key + ": " + response[key]);
+            }
+          } else {
+              console.log(key + ": " + response[key]);
+          }
         } catch (e) {
             console.log(key + ": [unprintable]");
         }
