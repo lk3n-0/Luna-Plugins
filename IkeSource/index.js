@@ -15,13 +15,7 @@ async function searchResults(keyword) {
         const cookieRegex = /_3chk\('([^']+?)','([^']+?)'/i;
         const cookieMatch = html.match(cookieRegex);
 
-        const rawCookies = (response.headers && typeof response.headers.get === 'function') 
-            ? response.headers.get("set-cookie") 
-            : (response.headers ? response.headers['set-cookie'] : null );
-
-        if (!rawCookies) throw new Error('No Response header');
-        cookies = rawCookies.split(';')[0];
-        cookies = cookies + '; ' + cookieMatch[1] + '=' + cookieMatch[2];
+        cookies = cookieMatch[1] + '=' + cookieMatch[2];
 
         const showRegex = /<li class="mlist"[\s\S]+?href="([\s\S]+?)"[\s\S]+?src="([\s\S]+?)"[\s\S]+?<strong>([\s\S]+?)</gi;
         const showMatch = html.matchAll(showRegex);
