@@ -193,7 +193,7 @@ async function getFinalLink(url) {
         for (const key in response) {
         try {
           if (key == "headers") {
-            for (const k in response[key]) {
+            for (const k in response[key]["headers"]) {
               console.log("Header - " + key + ": " + response[key]);
             }
           } else {
