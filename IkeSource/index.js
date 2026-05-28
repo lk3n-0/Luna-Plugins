@@ -15,7 +15,7 @@ async function searchResults(keyword) {
         const cookieRegex = /_3chk\('([^']+?)','([^']+?)'/i;
         const cookieMatch = html.match(cookieRegex);
 
-        cookies = cookieMatch[1] + '=' + cookieMatch[2];
+        cookies = cookies + cookieMatch[1] + '=' + cookieMatch[2];
 
         const showRegex = /<li class="mlist"[\s\S]+?href="([\s\S]+?)"[\s\S]+?src="([\s\S]+?)"[\s\S]+?<strong>([\s\S]+?)</gi;
         const showMatch = html.matchAll(showRegex);
@@ -192,13 +192,7 @@ async function getFinalLink(url) {
         console.log("response details:");
         for (const key in response) {
         try {
-          if (key == "headers") {
-            for (const k in response[key]["headers"]) {
-              console.log("Header - " + key + ": " + response[key]);
-            }
-          } else {
-              console.log(key + ": " + response[key]);
-          }
+            console.log(key + ": " + response[key]);
         } catch (e) {
             console.log(key + ": [unprintable]");
         }
