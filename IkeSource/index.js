@@ -7,7 +7,7 @@ async function searchResults(keyword) {
     try {
         const encodedKeyword = encodeURIComponent(keyword);
         const response = await soraFetch(`https://ridomovies.is/api/search?q=${encodedKeyword}&lang=en&limit=10`);
-        const data = await response.json();
+        const data = JSON.parse(response);
         const transformedResults = data.data.map(media => ({
             title: `${media.title}`,
             image: `https://ridomovies.is/${media.poster_path}`,
@@ -78,7 +78,7 @@ async function extractEpisodes(url) {
             for (let i = 1; i <= seasonCount; i++) {            
                 let seasonResponse = await soraFetch(`${url}/season-${i}`);
                 // Correctly parse JSON from the response object
-                const data = await seasonResponse.json(); 
+                const data = JSON.parse(seasonResponse); 
                 
                 // Correctly iterate over matchAll results
                 const matches = data.episodesHtml.matchAll(episodeRegex);
