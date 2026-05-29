@@ -28,7 +28,7 @@ async function searchResults(keyword) {
 async function extractDetails(url) {
     try {
         const response = await soraFetch(url);
-        const html = await response.text();
+        const html = response;
         
         const descriptionRegex = /overview[\s\S]+?>([\s\S]*?)<\/div/i;
         const durationRegex = /<strong>Duration:<\/strong> ([\s\S]*?)<\/span>/i;
@@ -63,7 +63,7 @@ async function extractDetails(url) {
 async function extractEpisodes(url) {
     try {
         let response = await soraFetch(url);
-        let html = await response.text();
+        let html = response;
     
         const seasonCountRegex = /"numberOfSeasons":\s*([\d]+)/i;
         const seasonCountMatch = html.match(seasonCountRegex);
@@ -112,7 +112,7 @@ async function extractStreamUrl(url) {
     try {
         // STEP 1: Fetch the Ridomovies page to find the iframe
         const ridoResponse = await soraFetch(url);
-        const ridoHtml = await ridoResponse.text();
+        const ridoHtml = ridoResponse;
         
         // Extract the closeload iframe URL from the data-src attribute
         const iframeMatch = ridoHtml.match(/<iframe data-src="([^"]+)"/);
@@ -133,7 +133,7 @@ async function extractStreamUrl(url) {
             }
         });
         
-        const embedHtml = await embedResponse.text();
+        const embedHtml = embedResponse;
         
         let streamUrl = "";
         let subtitles = "";
